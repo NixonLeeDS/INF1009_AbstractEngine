@@ -1,50 +1,47 @@
 package com.inf1009.engine.input;
 
 import com.badlogic.gdx.Gdx;
-import com.inf1009.engine.entity.inputState;
+import com.badlogic.gdx.Input;
+import com.inf1009.engine.entity.InputState;
 
-public class Keyboard extends AbstractInputDevice {
+/**
+ * Keyboard input device with configurable key mapping.
+ */
+public class Keyboard {
 
-    private final int left;
-    private final int right;
-    private final int up;
-    private final int down;
+    private final int leftKey;
+    private final int rightKey;
+    private final int upKey;
+    private final int downKey;
+    private final int jumpKey;
 
-    public Keyboard(int left, int right, int up, int down) {
-        this.left = left;
-        this.right = right;
-        this.up = up;
-        this.down = down;
+    public Keyboard(int leftKey, int rightKey, int upKey, int downKey, int jumpKey) {
+        this.leftKey = leftKey;
+        this.rightKey = rightKey;
+        this.upKey = upKey;
+        this.downKey = downKey;
+        this.jumpKey = jumpKey;
     }
 
-    @Override
-    public inputState readInput() {
-        float mx = 0f;
-        float my = 0f;
+    public InputState readInput() {
+        float moveX = 0f;
+        float moveY = 0f;
 
-        if (Gdx.input.isKeyPressed(left)) mx -= 1f;
-        if (Gdx.input.isKeyPressed(right)) mx += 1f;
-        if (Gdx.input.isKeyPressed(up)) my += 1f;
-        if (Gdx.input.isKeyPressed(down)) my -= 1f;
+        if (Gdx.input.isKeyPressed(leftKey)) moveX -= 1f;
+        if (Gdx.input.isKeyPressed(rightKey)) moveX += 1f;
+        if (Gdx.input.isKeyPressed(upKey)) moveY += 1f;
+        if (Gdx.input.isKeyPressed(downKey)) moveY -= 1f;
 
-        return new inputState(mx, my, false);
+        boolean jump = Gdx.input.isKeyJustPressed(jumpKey);
+
+        return new InputState(moveX, moveY, jump);
     }
 
-    public static Keyboard wasd() {
-        return new Keyboard(
-                com.badlogic.gdx.Input.Keys.A,
-                com.badlogic.gdx.Input.Keys.D,
-                com.badlogic.gdx.Input.Keys.W,
-                com.badlogic.gdx.Input.Keys.S
-        );
+    public static Keyboard player1WASD() {
+        return new Keyboard(Input.Keys.A, Input.Keys.D, Input.Keys.W, Input.Keys.S, Input.Keys.SPACE);
     }
 
-    public static Keyboard arrows() {
-        return new Keyboard(
-                com.badlogic.gdx.Input.Keys.LEFT,
-                com.badlogic.gdx.Input.Keys.RIGHT,
-                com.badlogic.gdx.Input.Keys.UP,
-                com.badlogic.gdx.Input.Keys.DOWN
-        );
+    public static Keyboard player2Arrows() {
+        return new Keyboard(Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.UP, Input.Keys.DOWN, Input.Keys.ENTER);
     }
 }

@@ -1,24 +1,38 @@
 package com.inf1009.engine.manager;
 
-import com.inf1009.engine.entity.inputState;
+import com.inf1009.engine.entity.InputState;
 import com.inf1009.engine.input.Keyboard;
 
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Coordinates input devices.
+ * Demo implementation: two keyboard devices (P1 and P2).
+ */
 public class IOManager {
 
-    private final Keyboard p1Keyboard;
-    private final Keyboard p2Keyboard;
+    private final List<Keyboard> devices;
+    private final Keyboard p1;
+    private final Keyboard p2;
 
     public IOManager() {
-        p1Keyboard = Keyboard.wasd();
-        p2Keyboard = Keyboard.arrows();
-        // Mouse exists as a skeleton if your UML includes it
+        this.devices = new ArrayList<>();
+        this.p1 = Keyboard.player1WASD();
+        this.p2 = Keyboard.player2Arrows();
+        devices.add(p1);
+        devices.add(p2);
     }
 
-    public inputState readP1() {
-        return p1Keyboard.readInput();
+    public InputState readP1() {
+        return p1.readInput();
     }
 
-    public inputState readP2() {
-        return p2Keyboard.readInput();
+    public InputState readP2() {
+        return p2.readInput();
+    }
+
+    public List<Keyboard> getDevices() {
+        return devices;
     }
 }

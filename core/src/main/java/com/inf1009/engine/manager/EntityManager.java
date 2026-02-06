@@ -23,4 +23,9 @@ public class EntityManager {
     public List<AbstractGameEntity> getEntities() {
         return entityList;
     }
+
+
+    public void clear() {
+
+    }
 }

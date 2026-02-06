@@ -1,10 +1,10 @@
 package com.inf1009.engine.input;
 
-import com.inf1009.engine.entity.inputState;
+import com.inf1009.engine.entity.InputState;
 
 public class Mouse extends AbstractInputDevice {
     @Override
-    public inputState readInput() {
-        return inputState.neutral();
+    public InputState readInput() {
+        return InputState.neutral();
     }
 }

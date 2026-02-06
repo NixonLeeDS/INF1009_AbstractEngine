@@ -8,6 +8,7 @@ import com.inf1009.engine.manager.EntityManager;
 import com.inf1009.engine.manager.IOManager;
 import com.inf1009.engine.manager.MovementManager;
 import com.inf1009.engine.manager.SceneManager;
+import com.inf1009.engine.scene.SimulatorScreen;
 import com.inf1009.engine.scene.StartScreen;
 
 public class GameMaster extends ApplicationAdapter {
@@ -29,8 +30,9 @@ public class GameMaster extends ApplicationAdapter {
         mm  = new MovementManager();
         cm  = new CollisionManager();
         io  = new IOManager();
-
         sm.addScreen("start", new StartScreen(this));
+        Gdx.graphics.setTitle("AbstractEngine - Press SPACE to start");
+        sm.addScreen("sim", new SimulatorScreen(this));
         sm.setScreen("start");
     }
 

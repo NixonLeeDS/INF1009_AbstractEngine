@@ -4,5 +4,6 @@ import com.badlogic.gdx.math.Rectangle;
 
 public interface ICollidable {
     Rectangle getBounds();
+    boolean isSolid();
     void onCollision(ICollidable other);
 }

@@ -1,8 +1,7 @@
 package com.inf1009.engine.entity;
 
-
-//Implemented by entities that can be moved via an InputState.
-
 public interface Moveable {
+
+    // Apply input-based movement for this frame
     void movement(InputState input, float dt);
 }

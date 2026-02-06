@@ -1,18 +1,14 @@
 package com.inf1009.engine.entity;
 
-
-// A moving entity with configurable speed and basic velocity storage.
-
 public class DynamicEntity extends AbstractGameEntity implements Moveable, ICollidable {
 
+    // Movement speed (horizontal movement)
     private float speed;
 
-    // Optional for platformer later, harmless now
-    private float velX;
-    private float velY;
-    private boolean grounded;
-
-    private boolean solid = true;
+    // Simple vertical physics
+    private float vy = 0f;
+    private float gravity = -900f;      // px/s^2
+    private float jumpImpulse = 380f;   // px/s
 
     public DynamicEntity(float x, float y, float w, float h, float speed) {
         super(x, y, w, h);
@@ -21,39 +17,49 @@ public class DynamicEntity extends AbstractGameEntity implements Moveable, IColl
 
     @Override
     public void update(float dt) {
-        // Default: nothing autonomous.
-        // If you later use velX/velY, you can update position here.
+        // Apply gravity to vertical velocity
+        vy += gravity * dt;
+
+        // Apply vertical movement
+        setPosition(getX(), getY() + vy * dt);
     }
 
     @Override
     public void movement(InputState input, float dt) {
+        // Horizontal movement using input snapshot
         float nx = getX() + input.getMoveX() * speed * dt;
-        float ny = getY() + input.getMoveY() * speed * dt;
-        setPosition(nx, ny);
+        setPosition(nx, getY());
+
+        // Jump only if requested and currently grounded
+        if (input.isJump() && isOnGround()) {
+            vy = jumpImpulse;
+        }
+    }
+
+    // Snap entity onto ground and stop falling
+    public void landOn(float groundY) {
+        setPosition(getX(), groundY);
+        vy = 0f;
+    }
+
+    // Lightweight ground check for demo
+    private boolean isOnGround() {
+        return Math.abs(vy) < 0.01f;
     }
 
     public float getSpeed() { return speed; }
     public void setSpeed(float speed) { this.speed = speed; }
 
-    public float getVelX() { return velX; }
-    public float getVelY() { return velY; }
-    public void setVelX(float velX) { this.velX = velX; }
-    public void setVelY(float velY) { this.velY = velY; }
-
-    public boolean isGrounded() { return grounded; }
-    public void setGrounded(boolean grounded) { this.grounded = grounded; }
-
-    @Override
-    public boolean isSolid() {
-        return solid;
-    }
-
-    public void setSolid(boolean solid) {
-        this.solid = solid;
-    }
+    public float getVy() { return vy; }
+    public void setVy(float vy) { this.vy = vy; }
 
     @Override
     public void onCollision(ICollidable other) {
-        // Default: no reaction. Keep engine generic.
+        // Default: no reaction (keeps engine generic)
+    }
+
+    @Override
+    public boolean isSolid() {
+        return true;
     }
 }

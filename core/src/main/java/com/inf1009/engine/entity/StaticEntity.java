@@ -1,10 +1,8 @@
 package com.inf1009.engine.entity;
 
-
-// * A non-moving entity (walls, platforms, obstacles).
-
 public class StaticEntity extends AbstractGameEntity implements ICollidable {
 
+    // Solid by default (walls, floor)
     private boolean solid = true;
 
     public StaticEntity(float x, float y, float w, float h) {
@@ -13,7 +11,7 @@ public class StaticEntity extends AbstractGameEntity implements ICollidable {
 
     @Override
     public void update(float dt) {
-        // Static entities do not update by default.
+        // Static entities do nothing each frame
     }
 
     @Override
@@ -27,6 +25,6 @@ public class StaticEntity extends AbstractGameEntity implements ICollidable {
 
     @Override
     public void onCollision(ICollidable other) {
-        // Default: no reaction.
+        // Default: no reaction
     }
 }

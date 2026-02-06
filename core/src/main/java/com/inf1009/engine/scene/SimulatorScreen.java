@@ -14,20 +14,13 @@ import com.inf1009.engine.entity.StaticEntity;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * SimulatorScreen
- *
- * Generic demo screen:
- * - Two controllable entities
- * - One falling collectible
- * - Collision + respawn loop
- *
- * No win condition. No scoring.
- * Demonstrates engine capability only.
- */
+// Generic demo screen with no winning lose lgoic
 public class SimulatorScreen implements Screen {
 
+    //reference to engine core
     private final GameMaster game;
+
+    // rendering
     private SpriteBatch batch;
 
     // Textures
@@ -42,42 +35,65 @@ public class SimulatorScreen implements Screen {
     private StaticEntity ground;
     private DynamicEntity fallingItem;
 
+    //Constants
     private static final float FALL_SPEED = 180f;
     private static final float SCREEN_W = 640;
     private static final float SCREEN_H = 480;
+    private boolean initialized = false;
 
+    // One-time init guard
     public SimulatorScreen(GameMaster game) {
         this.game = game;
     }
 
     // Lifecycle
-
     @Override
     public void show() {
         batch = game.getBatch();
 
-        // Load textures
-        bg = new Texture("img/bg.png");
-        playerATex = new Texture("img/playerA.png");
-        playerBTex = new Texture("img/playerB.png");
-        itemTex = new Texture("img/falling.png");
+        // Load textures only once
+        if (bg == null) {
+            bg = new Texture("img/bg.png");
+            playerATex = new Texture("img/playerA.png");
+            playerBTex = new Texture("img/playerB.png");
+            itemTex = new Texture("img/falling.png");
+        }
 
-        resetWorld();
+        // IMPORTANT: only reset world once (first time entering sim)
+        if (!initialized) {
+            initialized = true;
+
+            game.getEntityManager().clear();
+
+            agentA = new DynamicEntity(80, 120, 32, 32, 220f);
+            agentB = new DynamicEntity(140, 120, 32, 32, 220f);
+            ground = new StaticEntity(0, 40, 640, 40);
+
+            game.getEntityManager().addEntity(agentA);
+            game.getEntityManager().addEntity(agentB);
+            game.getEntityManager().addEntity(ground);
+
+            spawnFallingItem();
+        }
     }
+
 
     @Override
     public void render(float dt) {
 
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+        game.getSceneManager().setScreen("end"); // pause menu
+        return;
+        }
+
         handleGlobalInput();
-
         clearScreen();
-
         handleMovement(dt);
         updateEntities(dt);
         updateFallingItem(dt);
         handleCollisions();
         handleCatch();
-
         renderWorld();
     }
 
@@ -129,6 +145,16 @@ public class SimulatorScreen implements Screen {
 
     private void updateEntities(float dt) {
         game.getEntityManager().update(dt);
+        // Clamp players to ground (simple platformer floor)
+        float groundTop = ground.getY() + ground.getH();
+
+        if (agentA.getY() < groundTop) {
+            agentA.landOn(groundTop);
+        }
+        if (agentB.getY() < groundTop) {
+            agentB.landOn(groundTop);
+        }
+
     }
 
     private void updateFallingItem(float dt) {
@@ -164,7 +190,9 @@ public class SimulatorScreen implements Screen {
         if (caught) {
             // Coin pickup sound
             game.getCoinSound().play(0.1f);
-
+            //terminal print 
+            System.out.println("Pickup: coin. Collision Detected");
+            //respawn the coin
             game.getEntityManager().removeEntity(fallingItem);
             spawnFallingItem();
         }

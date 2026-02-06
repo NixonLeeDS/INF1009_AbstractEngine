@@ -1,33 +1,31 @@
 package com.inf1009.engine.output;
 
-/**
- * Minimal audio output implementation.
- * Part 1 can be stubbed (no-op) to keep engine abstract and compilable.
- */
+// Minimal audio output implementation (stub for Part 1)
 public class SoundOutputDevice implements Output {
 
+    // Mute flag
     private boolean muted = false;
 
     @Override
     public void playSoundSoundFile(String file) {
         if (muted) return;
-        // Part 1 stub: implement with Gdx.audio later if needed.
+        // Stub: implement later if needed
     }
 
     @Override
     public void stopSound() {
-        // Part 1 stub
+        // Stub
     }
 
     @Override
     public void playMusic(String file) {
         if (muted) return;
-        // Part 1 stub
+        // Stub
     }
 
     @Override
     public void stopMusic() {
-        // Part 1 stub
+        // Stub
     }
 
     @Override

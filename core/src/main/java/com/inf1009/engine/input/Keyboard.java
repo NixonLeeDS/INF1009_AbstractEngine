@@ -6,7 +6,6 @@ import com.inf1009.engine.entity.InputState;
 
 public class Keyboard extends AbstractInputDevice {
 
-    // Key bindings
     private final int leftKey;
     private final int rightKey;
     private final int upKey;
@@ -26,24 +25,19 @@ public class Keyboard extends AbstractInputDevice {
         float moveX = 0f;
         float moveY = 0f;
 
-        // Axis input
         if (Gdx.input.isKeyPressed(leftKey)) moveX -= 1f;
         if (Gdx.input.isKeyPressed(rightKey)) moveX += 1f;
         if (Gdx.input.isKeyPressed(upKey)) moveY += 1f;
         if (Gdx.input.isKeyPressed(downKey)) moveY -= 1f;
 
-        // Jump as "just pressed"
         boolean jump = Gdx.input.isKeyJustPressed(jumpKey);
-
         return new InputState(moveX, moveY, jump);
     }
 
-    // Preset mapping for Player 1
     public static Keyboard player1WASD() {
         return new Keyboard(Input.Keys.A, Input.Keys.D, Input.Keys.W, Input.Keys.S, Input.Keys.SPACE);
     }
 
-    // Preset mapping for Player 2
     public static Keyboard player2Arrows() {
         return new Keyboard(Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.UP, Input.Keys.DOWN, Input.Keys.ENTER);
     }

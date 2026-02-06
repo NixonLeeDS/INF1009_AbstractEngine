@@ -36,7 +36,7 @@ public class SimulatorScreen implements Screen {
     private DynamicEntity fallingItem;
 
     //Constants
-    private static final float FALL_SPEED = 180f;
+    private static final float FALL_SPEED = 120f;
     private static final float SCREEN_W = 640;
     private static final float SCREEN_H = 480;
     private boolean initialized = false;

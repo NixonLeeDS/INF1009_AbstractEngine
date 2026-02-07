@@ -1,7 +1,6 @@
 package com.inf1009.engine.scene;
 
-// Screen lifecycle contract
-public interface Screen {
+public interface IScreen {
     void show();
     void render(float dt);
     void hide();

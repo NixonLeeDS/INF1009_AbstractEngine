@@ -8,22 +8,18 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.inf1009.engine.GameMaster;
 
-// Pause / end screen (generic menu)
-public class EndScreen implements Screen {
-
-    private final GameMaster game;
+public class EndScreen extends AbstractScreen {
 
     private SpriteBatch batch;
     private ShapeRenderer shape;
     private BitmapFont font;
 
-    // Button layout
     private float resumeX = 220, resumeY = 260, resumeW = 200, resumeH = 60;
     private float menuX   = 220, menuY   = 180, menuW   = 200, menuH   = 60;
     private float exitX   = 220, exitY   = 100, exitW   = 200, exitH   = 60;
 
     public EndScreen(GameMaster game) {
-        this.game = game;
+        super(game);
     }
 
     @Override
@@ -39,14 +35,12 @@ public class EndScreen implements Screen {
         Gdx.gl.glClearColor(0.02f, 0.02f, 0.02f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Draw buttons
         shape.begin(ShapeRenderer.ShapeType.Filled);
         shape.rect(resumeX, resumeY, resumeW, resumeH);
         shape.rect(menuX, menuY, menuW, menuH);
         shape.rect(exitX, exitY, exitW, exitH);
         shape.end();
 
-        // Draw labels
         batch.begin();
         font.draw(batch, "PAUSED", 285, 370);
         font.draw(batch, "RESUME", resumeX + 60, resumeY + 38);
@@ -54,13 +48,11 @@ public class EndScreen implements Screen {
         font.draw(batch, "EXIT", exitX + 80, exitY + 38);
         batch.end();
 
-        // Resume with ESC
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             game.getSceneManager().setScreen("sim");
             return;
         }
 
-        // Mouse button handling
         if (isClicked(resumeX, resumeY, resumeW, resumeH)) {
             game.getSceneManager().setScreen("sim");
         } else if (isClicked(menuX, menuY, menuW, menuH)) {
@@ -70,7 +62,6 @@ public class EndScreen implements Screen {
         }
     }
 
-    // Check if a button is clicked
     private boolean isClicked(float x, float y, float w, float h) {
         if (!Gdx.input.justTouched()) return false;
 
@@ -79,8 +70,6 @@ public class EndScreen implements Screen {
 
         return mx >= x && mx <= x + w && my >= y && my <= y + h;
     }
-
-    @Override public void hide() {}
 
     @Override
     public void dispose() {

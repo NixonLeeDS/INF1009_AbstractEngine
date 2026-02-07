@@ -1,6 +1,6 @@
 package com.inf1009.engine.manager;
 
-import com.inf1009.engine.scene.Screen;
+import com.inf1009.engine.scene.IScreen;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,19 +8,19 @@ import java.util.Map;
 public class SceneManager {
 
     // Registered screens by name
-    private final Map<String, Screen> screens = new HashMap<>();
+    private final Map<String, IScreen> screens = new HashMap<>();
 
     // Currently active screen
-    private Screen current;
+    private IScreen current;
 
     // Add a new screen
-    public void addScreen(String name, Screen screen) {
+    public void addScreen(String name, IScreen screen) {
         screens.put(name, screen);
     }
 
     // Switch to another screen
     public void setScreen(String name) {
-        Screen next = screens.get(name);
+        IScreen next = screens.get(name);
         if (next == null) return;
 
         if (current != null) current.hide();
@@ -35,7 +35,7 @@ public class SceneManager {
 
     // Dispose all screens
     public void dispose() {
-        for (Screen s : screens.values()) {
+        for (IScreen s : screens.values()) {
             s.dispose();
         }
     }

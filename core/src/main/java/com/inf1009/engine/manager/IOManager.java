@@ -5,58 +5,62 @@ import com.inf1009.engine.input.AbstractInputDevice;
 import com.inf1009.engine.input.Keyboard;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class IOManager {
 
-    // UML: devices: List<AbstractInputDevice>
-    private final List<AbstractInputDevice> devices;
+    // UML: devices : List<AbstractInputDevice>
+    private final List<AbstractInputDevice> devices = new ArrayList<>();
 
-    private final AbstractInputDevice p1;
-    private final AbstractInputDevice p2;
+    // UML: playerInput : InputState
+    private InputState playerInput = new InputState(0, 0, false);
 
-    // UML: playerInput: InputState
-    private InputState playerInput;
-
-    // UML: bindings: InputMap (implemented as Map<String, Integer>)
-    private final Map<String, Integer> bindings;
+    // UML: bindings : InputMap
+    // (simple implementation to satisfy UML)
+    private final Map<String, Integer> bindings = new HashMap<>();
 
     public IOManager() {
-        devices = new ArrayList<>();
-        p1 = Keyboard.player1WASD();
-        p2 = Keyboard.player2Arrows();
-        devices.add(p1);
-        devices.add(p2);
-
-        playerInput = p1.readInput(); // default to p1
-        bindings = new HashMap<>();
+        // Engine-level device registration (still abstract)
+        devices.add(Keyboard.player1WASD());
+        devices.add(Keyboard.player2Arrows());
     }
 
-    // Existing API (keep so nothing breaks)
-    public InputState readP1() { return p1.readInput(); }
-    public InputState readP2() { return p2.readInput(); }
-    public List<AbstractInputDevice> getDevices() { return devices; }
+    // UML: getDevices()
+    public List<AbstractInputDevice> getDevices() {
+        return Collections.unmodifiableList(devices);
+    }
 
-    // update(): void
+    // UML: update()
     public void update() {
         processInput();
     }
 
-    //getInputState(): InputState
+    // UML: getInputState()
     public InputState getInputState() {
         return playerInput;
     }
 
-    //processInput(): void
-    // Minimal + safe: just mirror p1 input into playerInput
+    // UML: processInput()
+    // Default behaviour: read from first device
     public void processInput() {
-        playerInput = p1.readInput();
+        if (!devices.isEmpty()) {
+            playerInput = devices.get(0).readInput();
+        }
     }
 
-    //binding method without new classes
+    // UML: setBinding(action, keyCode)
     public void setBinding(String action, int inputKeyCode) {
         bindings.put(action, inputKeyCode);
+    }
+
+    // ENGINE-SAFE helper (used by SimulatorScreen)
+    public InputState readInput(int deviceIndex) {
+        if (deviceIndex < 0 || deviceIndex >= devices.size()) {
+            return new InputState(0, 0, false);
+        }
+        return devices.get(deviceIndex).readInput();
     }
 }

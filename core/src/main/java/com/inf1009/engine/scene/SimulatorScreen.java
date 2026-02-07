@@ -9,6 +9,7 @@ import com.inf1009.engine.GameMaster;
 import com.inf1009.engine.entity.AbstractGameEntity;
 import com.inf1009.engine.entity.DynamicEntity;
 import com.inf1009.engine.entity.ICollidable;
+import com.inf1009.engine.entity.InputState;
 import com.inf1009.engine.entity.StaticEntity;
 
 import java.util.ArrayList;
@@ -92,9 +93,13 @@ public class SimulatorScreen extends AbstractScreen {
 
 
     private void handleMovement(float dt) {
-        game.getMovementManager().applyInput(agentA, game.getIOManager().readP1(), dt);
-        game.getMovementManager().applyInput(agentB, game.getIOManager().readP2(), dt);
+        // Simulator decides mapping (game-specific)
+        InputState inputA = game.getIOManager().readInput(0);
+        InputState inputB = game.getIOManager().readInput(1);
+        game.getMovementManager().applyInput(agentA, inputA, dt);
+        game.getMovementManager().applyInput(agentB, inputB, dt);
     }
+
 
     private void updateEntities(float dt) {
         game.getEntityManager().update(dt);

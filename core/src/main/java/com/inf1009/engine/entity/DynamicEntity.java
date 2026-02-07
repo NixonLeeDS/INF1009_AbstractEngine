@@ -2,60 +2,95 @@ package com.inf1009.engine.entity;
 
 public class DynamicEntity extends AbstractGameEntity implements IMoveable, ICollidable {
 
-    // Movement speed (horizontal movement)
+    // UML-style fields
+    private float velocityX = 0f;
+    private float velocityY = 0f;
     private float speed;
+    private boolean isGrounded = false;
 
-    // Simple vertical physics
-    private float vy = 0f;
-    private float gravity = -900f;      // px/s^2
-    private float jumpImpulse = 380f;   // px/s
+    // Physics constants (you can tune)
+    private float gravity = -900f;
+    private float jumpImpulse = 380f;
+
+    // Optional world clamp (keeps behavior similar to before)
+    private static final float WORLD_WIDTH = 640f;
+    private static final float WORLD_HEIGHT = 480f;
 
     public DynamicEntity(float x, float y, float w, float h, float speed) {
         super(x, y, w, h);
         this.speed = speed;
     }
 
+    // UML: update(dt) applies gravity and moves using velocity
     @Override
     public void update(float dt) {
-        // Apply gravity to vertical velocity
-        vy += gravity * dt;
-
-        // Apply vertical movement
-        setPosition(getX(), getY() + vy * dt);
+        applyGravity(gravity, dt);
+        move(velocityX, velocityY, dt);
     }
 
+    // UML: movement(input, dt) from IMoveable, converts input to velocity
     @Override
     public void movement(InputState input, float dt) {
-        // Horizontal movement using input snapshot
-        float nx = getX() + input.getMoveX() * speed * dt;
-        setPosition(nx, getY());
+        // Convert input into horizontal velocity (per second)
+        velocityX = input.getMoveX() * speed;
 
-        // Jump only if requested and currently grounded
-        if (input.isJump() && isOnGround()) {
-            vy = jumpImpulse;
+        // Optional: if you want vertical input movement (top-down), uncomment:
+        // velocityY = input.getMoveY() * speed;
+
+        if (input.isJump() && isGrounded) {
+            jump(jumpImpulse);
         }
     }
 
-    // Snap entity onto ground and stop falling
+    // UML: applyGravity(gravity, dt)
+    public void applyGravity(float gravity, float dt) {
+        if (!isGrounded) {
+            velocityY += gravity * dt;
+        }
+    }
+
+    // UML: move(dx, dy, dt)
+    // Here dx/dy are velocities in px/s
+    public void move(float dx, float dy, float dt) {
+        float nx = getX() + dx * dt;
+        float ny = getY() + dy * dt;
+
+        // clamp inside world bounds
+        if (nx < 0) nx = 0;
+        if (nx + getW() > WORLD_WIDTH) nx = WORLD_WIDTH - getW();
+
+        if (ny < 0) ny = 0;
+        if (ny + getH() > WORLD_HEIGHT) ny = WORLD_HEIGHT - getH();
+
+        setPosition(nx, ny);
+    }
+
+    // UML: jump(force)
+    public void jump(float force) {
+        velocityY = force;
+        isGrounded = false;
+    }
+
+    // Keep your existing helper so SimulatorScreen does not need big changes
     public void landOn(float groundY) {
         setPosition(getX(), groundY);
-        vy = 0f;
+        velocityY = 0f;
+        isGrounded = true;
     }
 
-    // Lightweight ground check for demo
-    private boolean isOnGround() {
-        return Math.abs(vy) < 0.01f;
-    }
+    // UML getters
+    public float getVelocityX() { return velocityX; }
+    public float getVelocityY() { return velocityY; }
 
+    // extra getters/setters that help other code and UML
     public float getSpeed() { return speed; }
     public void setSpeed(float speed) { this.speed = speed; }
 
-    public float getVy() { return vy; }
-    public void setVy(float vy) { this.vy = vy; }
+    public boolean isGrounded() { return isGrounded; }
 
     @Override
     public void onCollision(ICollidable other) {
-        // Default: no reaction (keeps engine generic)
+        // keep generic
     }
 
     @Override

@@ -7,76 +7,57 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.inf1009.engine.GameMaster;
 import com.inf1009.engine.entity.AbstractGameEntity;
 import com.inf1009.engine.entity.DynamicEntity;
-import com.inf1009.engine.entity.ICollidable;
-import com.inf1009.engine.entity.StaticEntity;
+import com.inf1009.engine.interfaces.ICollidable;
+import com.inf1009.engine.interfaces.IScreen;
+import com.inf1009.engine.manager.CollisionManager;
+import com.inf1009.engine.manager.EntityManager;
+import com.inf1009.engine.manager.IOManager;
+import com.inf1009.engine.manager.MovementManager;
 import com.inf1009.engine.entity.InputState;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Generic simulation screen.
- * 
- * PURPOSE:
- * Demonstrates engine capabilities only:
- * - Multiple entities
- * - Input system
- * - Movement manager
- * - Collision manager
- * - Rendering
- * 
- * No scoring, no spawning, no game mechanics.
- */
 public class SimulatorScreen implements IScreen {
 
     private final GameMaster game;
+
+    private final EntityManager entityManager;
+    private final CollisionManager collisionManager;
+    private final MovementManager movementManager;
+    private final IOManager ioManager;
+
     private ShapeRenderer shape;
 
-    // Two controllable dynamic entities
     private DynamicEntity entityA;
     private DynamicEntity entityB;
-
-    // Simple static ground
-    private StaticEntity ground;
-
-    private static final float SCREEN_W = 640f;
-    private static final float SCREEN_H = 480f;
+    private DynamicEntity fallingCircle; // only one circle
 
     private boolean initialized = false;
 
     public SimulatorScreen(GameMaster game) {
         this.game = game;
+        this.entityManager = game.getEntityManager();
+        this.collisionManager = game.getCollisionManager();
+        this.movementManager = game.getMovementManager();
+        this.ioManager = game.getIOManager();
     }
 
     @Override
     public void show() {
-
         if (shape == null) {
             shape = new ShapeRenderer();
         }
 
         if (!initialized) {
             initialized = true;
-
-            game.getEntityManager().clear();
-
-            // Create two generic movable entities
-            entityA = new DynamicEntity(100, 150, 30, 30, 220f);
-            entityB = new DynamicEntity(220, 150, 30, 30, 220f);
-
-            // Static ground for collision demo
-            ground = new StaticEntity(0, 40, SCREEN_W, 40);
-
-            game.getEntityManager().addEntity(entityA);
-            game.getEntityManager().addEntity(entityB);
-            game.getEntityManager().addEntity(ground);
+            resetSimulation();
         }
     }
 
     @Override
     public void render(float dt) {
 
-        // Simple exit navigation
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             game.getSceneManager().setScreen("end");
             return;
@@ -86,64 +67,108 @@ public class SimulatorScreen implements IScreen {
 
         handleInput(dt);
 
-        // Update all entities via EntityManager
-        game.getEntityManager().update(dt);
-
-        // Run collision system
+        entityManager.update(dt);
         handleCollisions();
 
-        // Application-level boundary control
-        clampToScreen(entityA);
-        clampToScreen(entityB);
+        float worldWidth = Gdx.graphics.getWidth();
+        float worldHeight = Gdx.graphics.getHeight();
+
+        for (AbstractGameEntity e : entityManager.getEntities()) {
+            if (e instanceof DynamicEntity) {
+                clampInside((DynamicEntity) e, worldWidth, worldHeight);
+            }
+        }
 
         renderWorld();
     }
 
-    /**
-     * Demonstrates IO + Movement managers.
-     * Device 0 and 1 control separate entities.
-     */
-    private void handleInput(float dt) {
+    private void spawnCircle() {
 
-        InputState inputA = game.getIOManager().readDevice(0);
-        InputState inputB = game.getIOManager().readDevice(1);
+        float worldWidth = Gdx.graphics.getWidth();
+        float worldHeight = Gdx.graphics.getHeight();
 
-        game.getMovementManager().applyInput(entityA, inputA, dt);
-        game.getMovementManager().applyInput(entityB, inputB, dt);
+        fallingCircle = new DynamicEntity(
+                50 + (float)Math.random() * (worldWidth - 100),
+                worldHeight - 60,
+                50,   // bigger size
+                50,
+                0f
+        );
+
+        fallingCircle.setVelocityX(0);
+        fallingCircle.setVelocityY(-350f); // faster drop
+
+        entityManager.addEntity(fallingCircle);
     }
 
-    /**
-     * Collects collidable entities and runs collision manager.
-     */
+    private void handleInput(float dt) {
+        InputState inputA = ioManager.readDevice(0);
+        InputState inputB = ioManager.readDevice(1);
+        movementManager.applyInput(entityA, inputA, dt);
+        movementManager.applyInput(entityB, inputB, dt);
+    }
+
     private void handleCollisions() {
 
         List<ICollidable> collidables = new ArrayList<>();
 
-        for (AbstractGameEntity e : game.getEntityManager().getEntities()) {
+        for (AbstractGameEntity e : entityManager.getEntities()) {
             if (e instanceof ICollidable) {
                 collidables.add((ICollidable) e);
             }
         }
 
-        game.getCollisionManager().update(collidables);
+        collisionManager.update(collidables);
+
+        if (fallingCircle == null) return;
+
+        boolean remove = false;
+
+        // Touch bottom
+        if (fallingCircle.getY() <= 0) {
+            remove = true;
+        }
+
+        // Hit player
+        if (fallingCircle.getBounds().overlaps(entityA.getBounds()) ||
+            fallingCircle.getBounds().overlaps(entityB.getBounds())) {
+
+            System.out.println("Collision detected!");
+            remove = true;
+        }
+
+        if (remove) {
+            entityManager.removeEntity(fallingCircle);
+            spawnCircle(); // immediately spawn next
+        }
     }
 
-    /**
-     * Application controls world bounds.
-     * Engine does NOT hardcode world size.
-     */
-    private void clampToScreen(DynamicEntity e) {
+    private void clampInside(DynamicEntity e, float worldWidth, float worldHeight) {
 
-        float x = e.getX();
-        float y = e.getY();
+        float newX = e.getX();
+        float newY = e.getY();
 
-        if (x < 0) e.setPosition(0, y);
-        if (x + e.getW() > SCREEN_W)
-            e.setPosition(SCREEN_W - e.getW(), y);
+        if (newX < 0) {
+            newX = 0;
+            e.setVelocityX(0);
+        }
 
-        if (y < 0) e.setPosition(x, 0);
-        if (y + e.getH() > SCREEN_H)
-            e.setPosition(x, SCREEN_H - e.getH());
+        if (newX + e.getW() > worldWidth) {
+            newX = worldWidth - e.getW();
+            e.setVelocityX(0);
+        }
+
+        if (newY < 0) {
+            newY = 0;
+            e.setVelocityY(0);
+        }
+
+        if (newY + e.getH() > worldHeight) {
+            newY = worldHeight - e.getH();
+            e.setVelocityY(0);
+        }
+
+        e.setPosition(newX, newY);
     }
 
     private void clearScreen() {
@@ -151,19 +176,48 @@ public class SimulatorScreen implements IScreen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
     }
 
-    /**
-     * Simple rectangle rendering for demonstration.
-     */
     private void renderWorld() {
 
         shape.begin(ShapeRenderer.ShapeType.Filled);
 
-        shape.rect(ground.getX(), ground.getY(), ground.getW(), ground.getH());
+        for (AbstractGameEntity e : entityManager.getEntities()) {
 
-        shape.rect(entityA.getX(), entityA.getY(), entityA.getW(), entityA.getH());
-        shape.rect(entityB.getX(), entityB.getY(), entityB.getW(), entityB.getH());
+            if (e == entityA) {
+                shape.setColor(0f, 0.8f, 1f, 1f);
+                shape.rect(e.getX(), e.getY(), e.getW(), e.getH());
+            }
+            else if (e == entityB) {
+                shape.setColor(1f, 0.4f, 0f, 1f);
+                float x = e.getX();
+                float y = e.getY();
+                float w = e.getW();
+                float h = e.getH();
+                shape.triangle(x, y, x + w, y, x + w / 2f, y + h);
+            }
+            else {
+                shape.setColor(0.9f, 0.1f, 0.1f, 1f);
+                shape.circle(
+                        e.getX() + e.getW() / 2f,
+                        e.getY() + e.getH() / 2f,
+                        e.getW() / 2f
+                );
+            }
+        }
 
         shape.end();
+    }
+
+    public void resetSimulation() {
+
+        entityManager.clear();
+
+        entityA = new DynamicEntity(100, 150, 45, 45, 220f);
+        entityB = new DynamicEntity(250, 200, 45, 45, 220f);
+
+        entityManager.addEntity(entityA);
+        entityManager.addEntity(entityB);
+
+        spawnCircle(); // start first circle
     }
 
     @Override public void hide() {}

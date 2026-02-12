@@ -2,7 +2,7 @@ package com.inf1009.engine.manager;
 
 import com.inf1009.engine.collision.CollisionDetection;
 import com.inf1009.engine.collision.CollisionHandling;
-import com.inf1009.engine.entity.ICollidable;
+import com.inf1009.engine.interfaces.ICollidable;
 
 import java.util.ArrayList;
 import java.util.List;

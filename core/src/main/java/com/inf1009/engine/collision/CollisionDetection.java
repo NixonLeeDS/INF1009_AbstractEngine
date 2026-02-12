@@ -1,8 +1,8 @@
 package com.inf1009.engine.collision;
 
-import com.inf1009.engine.entity.ICollidable;
-
 import java.util.List;
+
+import com.inf1009.engine.interfaces.ICollidable;
 
 public class CollisionDetection {
 

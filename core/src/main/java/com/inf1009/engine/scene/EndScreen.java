@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.inf1009.engine.GameMaster;
+import com.inf1009.engine.interfaces.IScreen;
 
 public class EndScreen implements IScreen {
 

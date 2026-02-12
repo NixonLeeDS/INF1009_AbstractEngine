@@ -1,5 +1,7 @@
 package com.inf1009.engine.entity;
 
+import com.inf1009.engine.interfaces.ICollidable;
+
 public class StaticEntity extends AbstractGameEntity implements ICollidable {
 
     // Solid by default (walls, floor)

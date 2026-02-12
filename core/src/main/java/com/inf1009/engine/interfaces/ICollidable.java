@@ -1,4 +1,4 @@
-package com.inf1009.engine.entity;
+package com.inf1009.engine.interfaces;
 
 import com.badlogic.gdx.math.Rectangle;
 

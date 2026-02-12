@@ -1,9 +1,9 @@
 package com.inf1009.engine.manager;
 
-import com.inf1009.engine.scene.IScreen;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import com.inf1009.engine.interfaces.IScreen;
 
 public class SceneManager {
 

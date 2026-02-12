@@ -1,6 +1,6 @@
 package com.inf1009.engine.collision;
 
-import com.inf1009.engine.entity.ICollidable;
+import com.inf1009.engine.interfaces.ICollidable;
 
 public class CollisionHandling {
 

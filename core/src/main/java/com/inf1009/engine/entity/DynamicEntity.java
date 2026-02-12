@@ -1,5 +1,8 @@
 package com.inf1009.engine.entity;
 
+import com.inf1009.engine.interfaces.ICollidable;
+import com.inf1009.engine.interfaces.IMoveable;
+
 public class DynamicEntity extends AbstractGameEntity implements IMoveable, ICollidable {
 
     // UML-style fields
@@ -82,7 +85,8 @@ public class DynamicEntity extends AbstractGameEntity implements IMoveable, ICol
 
     @Override
     public void onCollision(ICollidable other) {
-        // keep generic
+            // Reverse horizontal direction
+    setVelocityX(-getVelocityX());
     }
 
     @Override

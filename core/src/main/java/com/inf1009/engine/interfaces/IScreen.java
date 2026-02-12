@@ -1,4 +1,4 @@
-package com.inf1009.engine.scene;
+package com.inf1009.engine.interfaces;
 
 public interface IScreen {
     void show();

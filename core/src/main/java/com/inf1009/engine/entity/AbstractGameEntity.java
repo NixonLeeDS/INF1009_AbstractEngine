@@ -14,8 +14,8 @@ public abstract class AbstractGameEntity {
     // Bounding box used for collision detection
     private final Rectangle bounds;
 
-    // Marks entity for removal by manager
-    private boolean destroyed;
+    // Lifecycle flag indicating whether entity should be removed
+    private boolean isDestroyed;
 
     protected AbstractGameEntity(float x, float y, float w, float h) {
         this.x = x;
@@ -23,11 +23,14 @@ public abstract class AbstractGameEntity {
         this.w = w;
         this.h = h;
         this.bounds = new Rectangle(x, y, w, h);
-        this.destroyed = false;
+        this.isDestroyed = false;
     }
 
     // Called every frame by EntityManager
     public abstract void update(float dt);
+
+    // Entities must define how they render themselves
+    public abstract void render(ShapeRenderer shape);
 
     // Returns collision bounds
     public final Rectangle getBounds() {
@@ -41,8 +44,14 @@ public abstract class AbstractGameEntity {
     public final float getH() { return h; }
 
     // Lifecycle state
-    public final boolean isDestroyed() { return destroyed; }
-    public final void destroy() { destroyed = true; }
+    public final boolean isDestroyed() {
+        return isDestroyed;
+    }
+
+    // Marks entity for removal
+    public final void destroy() {
+        isDestroyed = true;
+    }
 
     // Updates position and keeps bounds aligned
     public final void setPosition(float newX, float newY) {
@@ -57,8 +66,4 @@ public abstract class AbstractGameEntity {
         this.h = newH;
         bounds.setSize(newW, newH);
     }
-
-
-    // Entities must define how they render themselves
-    public abstract void render(ShapeRenderer shape);
 }

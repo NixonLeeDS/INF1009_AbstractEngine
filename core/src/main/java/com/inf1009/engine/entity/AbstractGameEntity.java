@@ -1,5 +1,6 @@
 package com.inf1009.engine.entity;
 
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 
 public abstract class AbstractGameEntity {
@@ -56,4 +57,8 @@ public abstract class AbstractGameEntity {
         this.h = newH;
         bounds.setSize(newW, newH);
     }
+
+
+    // Entities must define how they render themselves
+    public abstract void render(ShapeRenderer shape);
 }

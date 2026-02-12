@@ -1,69 +1,56 @@
 package com.inf1009.engine.entity;
 
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.inf1009.engine.interfaces.ICollidable;
 import com.inf1009.engine.interfaces.IMoveable;
 
 public class DynamicEntity extends AbstractGameEntity implements IMoveable, ICollidable {
 
-    // Velocity in px per second
     private float velocityX = 0f;
     private float velocityY = 0f;
-
-    // Movement speed scalar
     private float speed;
 
-    // True when resting on surface
     private boolean isGrounded = false;
 
-    // Simple physics parameters
     private float gravity = -900f;
-    private float jumpImpulse = 380f;
 
     public DynamicEntity(float x, float y, float w, float h, float speed) {
         super(x, y, w, h);
         this.speed = speed;
     }
 
-    // Applies physics each frame
     @Override
     public void update(float dt) {
         isGrounded = false;
-        applyGravity(gravity, dt);
-        move(velocityX, velocityY, dt);
+        applyGravity(dt);
+        applyVelocity(dt);
     }
 
-    // Converts input state into velocity
-    @Override
-    public void movement(InputState input, float dt) {
-
-        velocityX = input.getMoveX() * speed;
-
-        if (input.isJump() && isGrounded) {
-            jump(jumpImpulse);
-        }
-    }
-
-    // Applies vertical acceleration
-    public void applyGravity(float gravity, float dt) {
+    private void applyGravity(float dt) {
         if (!isGrounded) {
             velocityY += gravity * dt;
         }
     }
 
-    // Moves entity using velocity
-    public void move(float dx, float dy, float dt) {
-        float nx = getX() + dx * dt;
-        float ny = getY() + dy * dt;
+    private void applyVelocity(float dt) {
+        float nx = getX() + velocityX * dt;
+        float ny = getY() + velocityY * dt;
         setPosition(nx, ny);
     }
 
-    // Applies upward impulse
+    // IMoveable method
+    @Override
+    public void move(float dx, float dy) {
+        float nx = getX() + dx;
+        float ny = getY() + dy;
+        setPosition(nx, ny);
+    }
+
     public void jump(float force) {
         velocityY = force;
         isGrounded = false;
     }
 
-    // Snaps entity to surface
     public void landOn(float groundY) {
         setPosition(getX(), groundY);
         velocityY = 0f;
@@ -71,17 +58,39 @@ public class DynamicEntity extends AbstractGameEntity implements IMoveable, ICol
     }
 
     // Velocity accessors
-    public float getVelocityX() { return velocityX; }
-    public float getVelocityY() { return velocityY; }
-    public void setVelocityX(float vx) { this.velocityX = vx; }
-    public void setVelocityY(float vy) { this.velocityY = vy; }
+    @Override
+    public float getVelocityX() {
+        return velocityX;
+    }
 
-    public float getSpeed() { return speed; }
-    public void setSpeed(float speed) { this.speed = speed; }
+    @Override
+    public float getVelocityY() {
+        return velocityY;
+    }
 
-    public boolean isGrounded() { return isGrounded; }
+    @Override
+    public void setVelocityX(float vx) {
+        this.velocityX = vx;
+    }
 
-    // Default collision reaction
+    @Override
+    public void setVelocityY(float vy) {
+        this.velocityY = vy;
+    }
+
+    @Override
+    public float getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
+    public boolean isGrounded() {
+        return isGrounded;
+    }
+
     @Override
     public void onCollision(ICollidable other) {
         setVelocityX(-getVelocityX());
@@ -90,5 +99,10 @@ public class DynamicEntity extends AbstractGameEntity implements IMoveable, ICol
     @Override
     public boolean isSolid() {
         return true;
+    }
+
+    @Override
+    public void render(ShapeRenderer shape) {
+        shape.rect(getX(), getY(), getW(), getH());
     }
 }

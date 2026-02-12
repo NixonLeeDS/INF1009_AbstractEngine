@@ -1,28 +1,33 @@
 package com.inf1009.engine.collision;
 
+import java.util.ArrayList;
 import java.util.List;
 import com.inf1009.engine.interfaces.ICollidable;
 
 public class CollisionDetection {
 
-    // Checks every pair of collidable objects in the list
-    public void detectAll(List<ICollidable> collidables,
-                          CollisionHandling handling) {
+    // Detect collision between two objects
+    public boolean detect(ICollidable a, ICollidable b) {
+        return a.getBounds().overlaps(b.getBounds());
+    }
 
-        // Loop through each object
+    // Detect all collision pairs
+    public List<ICollidable[]> detectAll(List<ICollidable> collidables) {
+
+        List<ICollidable[]> collisions = new ArrayList<>();
+
         for (int i = 0; i < collidables.size(); i++) {
-
-            // Compare current object with the remaining objects only
             for (int j = i + 1; j < collidables.size(); j++) {
 
                 ICollidable a = collidables.get(i);
                 ICollidable b = collidables.get(j);
 
-                // If their bounding areas overlap, trigger resolution
-                if (a.getBounds().overlaps(b.getBounds())) {
-                    handling.resolve(a, b);
+                if (detect(a, b)) {
+                    collisions.add(new ICollidable[]{a, b});
                 }
             }
         }
+
+        return collisions;
     }
 }

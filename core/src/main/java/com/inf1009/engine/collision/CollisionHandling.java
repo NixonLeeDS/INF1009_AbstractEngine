@@ -4,13 +4,12 @@ import com.inf1009.engine.interfaces.ICollidable;
 
 public class CollisionHandling {
 
-    // Notifies both objects that a collision has occurred
+    // Resolves collision between two solid objects
     public void resolve(ICollidable a, ICollidable b) {
 
-        // First object reacts to second
-        a.onCollision(b);
+        if (!a.isSolid() || !b.isSolid()) return;
 
-        // Second object reacts to first
+        a.onCollision(b);
         b.onCollision(a);
     }
 }

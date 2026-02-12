@@ -1,5 +1,5 @@
 package com.inf1009.engine.manager;
-
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.inf1009.engine.entity.AbstractGameEntity;
 
 import java.util.ArrayList;
@@ -42,4 +42,11 @@ public class EntityManager {
 
         entities.removeIf(AbstractGameEntity::isDestroyed);
     }
+
+    public void render(ShapeRenderer shape) {
+        for (AbstractGameEntity e : entities) {
+            e.render(shape);
+        }
+    }
+
 }

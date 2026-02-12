@@ -1,12 +1,18 @@
 package com.inf1009.engine.input;
 
+import com.badlogic.gdx.Gdx;
 import com.inf1009.engine.entity.InputState;
 
 public class Mouse extends AbstractInputDevice {
 
     @Override
     public InputState readInput() {
-        // Placeholder device, returns no movement
-        return InputState.neutral();
+
+        float moveX = Gdx.input.getDeltaX();
+        float moveY = -Gdx.input.getDeltaY();
+
+        boolean click = Gdx.input.justTouched();
+
+        return new InputState(moveX, moveY, click);
     }
 }

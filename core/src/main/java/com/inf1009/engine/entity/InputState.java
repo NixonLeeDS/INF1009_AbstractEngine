@@ -2,24 +2,30 @@ package com.inf1009.engine.entity;
 
 public final class InputState {
 
-    // Normalized directional input
-    private final float moveX;
-    private final float moveY;
-
-    // Action trigger
-    private final boolean jump;
+    private float moveX;
+    private float moveY;
+    private float moveZ;
+    private boolean jump;
 
     public InputState(float moveX, float moveY, boolean jump) {
         this.moveX = moveX;
         this.moveY = moveY;
+        this.moveZ = 0f;
         this.jump = jump;
     }
 
     public float getMoveX() { return moveX; }
     public float getMoveY() { return moveY; }
+    public float getMoveZ() { return moveZ; }
     public boolean isJump() { return jump; }
 
-    // No-input state
+    public void reset() {
+        moveX = 0f;
+        moveY = 0f;
+        moveZ = 0f;
+        jump = false;
+    }
+
     public static InputState neutral() {
         return new InputState(0f, 0f, false);
     }

@@ -9,20 +9,13 @@ import java.util.*;
 public class IOManager {
 
     private final List<AbstractInputDevice> devices = new ArrayList<>();
-
-    // Simple action-to-key binding map
     private final Map<String, Integer> bindings = new HashMap<>();
+
+    private InputState playerInput = InputState.neutral();
 
     public IOManager() {
         devices.add(Keyboard.wasd());
         devices.add(Keyboard.arrows());
-    }
-
-    public InputState readDevice(int index) {
-        if (index < 0 || index >= devices.size()) {
-            return InputState.neutral();
-        }
-        return devices.get(index).readInput();
     }
 
     public List<AbstractInputDevice> getDevices() {
@@ -34,17 +27,31 @@ public class IOManager {
         devices.add(device);
     }
 
-    // UML requirement
-    public void update() {
-        // Reserved for future polling logic
+    public InputState readDevice(int index) {
+        if (index < 0 || index >= devices.size()) {
+            return InputState.neutral();
+        }
+        return devices.get(index).readInput();
     }
 
-    // UML requirement
+    public void update() {
+        if (!devices.isEmpty()) {
+            playerInput = devices.get(0).readInput();
+        }
+    }
+
+    public void processInput(int index) {
+        playerInput = readDevice(index);
+    }
+
     public InputState getInputState(int index) {
         return readDevice(index);
     }
 
-    // UML requirement
+    public InputState getPlayerInput() {
+        return playerInput;
+    }
+
     public void setBinding(String action, int keyCode) {
         bindings.put(action, keyCode);
     }

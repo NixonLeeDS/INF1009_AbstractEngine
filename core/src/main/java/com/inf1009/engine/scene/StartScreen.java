@@ -6,11 +6,8 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.inf1009.engine.GameMaster;
-import com.inf1009.engine.interfaces.IScreen;
 
-public class StartScreen implements IScreen {
-
-    private final GameMaster game;
+public class StartScreen extends AbstractScreen {
 
     private SpriteBatch batch;
     private ShapeRenderer shape;
@@ -20,7 +17,7 @@ public class StartScreen implements IScreen {
     private float exitX  = 220, exitY  = 160, exitW  = 200, exitH  = 60;
 
     public StartScreen(GameMaster game) {
-        this.game = game;
+        super(game);
     }
 
     @Override
@@ -33,6 +30,7 @@ public class StartScreen implements IScreen {
 
     @Override
     public void render(float dt) {
+
         Gdx.gl.glClearColor(0.08f, 0.08f, 0.08f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -54,6 +52,7 @@ public class StartScreen implements IScreen {
     }
 
     private boolean isClicked(float x, float y, float w, float h) {
+
         if (!Gdx.input.justTouched()) return false;
 
         float mx = Gdx.input.getX();
@@ -61,8 +60,6 @@ public class StartScreen implements IScreen {
 
         return mx >= x && mx <= x + w && my >= y && my <= y + h;
     }
-
-    @Override public void hide() {}
 
     @Override
     public void dispose() {

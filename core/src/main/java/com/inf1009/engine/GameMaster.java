@@ -3,16 +3,8 @@ package com.inf1009.engine;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.inf1009.engine.manager.CollisionManager;
-import com.inf1009.engine.manager.EntityManager;
-import com.inf1009.engine.manager.IOManager;
-import com.inf1009.engine.manager.MovementManager;
-import com.inf1009.engine.manager.SceneManager;
-import com.inf1009.engine.output.Output;
-import com.inf1009.engine.output.SoundOutputDevice;
-import com.inf1009.engine.scene.EndScreen;
-import com.inf1009.engine.scene.SimulatorScreen;
-import com.inf1009.engine.scene.StartScreen;
+import com.inf1009.engine.manager.*;
+import com.inf1009.engine.scene.*;
 
 public class GameMaster extends ApplicationAdapter {
 
@@ -24,10 +16,9 @@ public class GameMaster extends ApplicationAdapter {
     private CollisionManager cm;
     private IOManager io;
 
-    private Output output;
-
     @Override
     public void create() {
+
         batch = new SpriteBatch();
 
         ent = new EntityManager();
@@ -36,13 +27,11 @@ public class GameMaster extends ApplicationAdapter {
         cm  = new CollisionManager();
         io  = new IOManager();
 
-        output = new SoundOutputDevice();
-
         sm.addScreen("start", new StartScreen(this));
         sm.addScreen("sim", new SimulatorScreen(this));
         sm.addScreen("end", new EndScreen(this));
-        sm.setScreen("start");
 
+        sm.setScreen("start");
     }
 
     @Override
@@ -63,5 +52,4 @@ public class GameMaster extends ApplicationAdapter {
     public MovementManager getMovementManager() { return mm; }
     public CollisionManager getCollisionManager() { return cm; }
     public IOManager getIOManager() { return io; }
-    public Output getOutput() { return output; }
 }

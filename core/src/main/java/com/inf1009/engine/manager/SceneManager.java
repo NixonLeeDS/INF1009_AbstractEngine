@@ -3,21 +3,20 @@ package com.inf1009.engine.manager;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.inf1009.engine.interfaces.IScreen;
+import com.inf1009.engine.scene.AbstractScreen;
 
 public class SceneManager {
 
-    private final Map<String, IScreen> screens = new HashMap<>();
-    private IScreen current;
+    private final Map<String, AbstractScreen> screens = new HashMap<>();
+    private AbstractScreen current;
 
-    public void addScreen(String name, IScreen screen) {
-        if (name == null || screen == null) return;
+    public void addScreen(String name, AbstractScreen screen) {
         screens.put(name, screen);
     }
 
     public void setScreen(String name) {
 
-        IScreen next = screens.get(name);
+        AbstractScreen next = screens.get(name);
         if (next == null) return;
 
         if (current != null) current.hide();
@@ -26,28 +25,12 @@ public class SceneManager {
         current.show();
     }
 
-    public IScreen getCurrentScreen() {
-        return current;
-    }
-
     public void render(float dt) {
-        if (current != null) {
-            current.render(dt);
-        }
-    }
-
-
-    public void update(float dt) {
-        render(dt);
-    }
-
-
-    public void transition(String name) {
-        setScreen(name);
+        if (current != null) current.render(dt);
     }
 
     public void dispose() {
-        for (IScreen s : screens.values()) {
+        for (AbstractScreen s : screens.values()) {
             s.dispose();
         }
         screens.clear();

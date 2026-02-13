@@ -8,20 +8,17 @@ import com.inf1009.engine.GameMaster;
 import com.inf1009.engine.entity.AbstractGameEntity;
 import com.inf1009.engine.entity.DynamicEntity;
 import com.inf1009.engine.entity.StaticEntity;
+import com.inf1009.engine.input.InputState;
 import com.inf1009.engine.interfaces.ICollidable;
-import com.inf1009.engine.interfaces.IScreen;
 import com.inf1009.engine.manager.CollisionManager;
 import com.inf1009.engine.manager.EntityManager;
 import com.inf1009.engine.manager.IOManager;
 import com.inf1009.engine.manager.MovementManager;
-import com.inf1009.engine.entity.InputState;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SimulatorScreen implements IScreen {
-
-    private final GameMaster game;
+public class SimulatorScreen extends AbstractScreen {
 
     private final EntityManager entityManager;
     private final CollisionManager collisionManager;
@@ -39,7 +36,7 @@ public class SimulatorScreen implements IScreen {
     private boolean initialized = false;
 
     public SimulatorScreen(GameMaster game) {
-        this.game = game;
+        super(game);
         this.entityManager = game.getEntityManager();
         this.collisionManager = game.getCollisionManager();
         this.movementManager = game.getMovementManager();
@@ -198,7 +195,9 @@ public class SimulatorScreen implements IScreen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
     }
 
-    @Override public void hide() {}
+    @Override
+    public void hide() {
+    }
 
     @Override
     public void dispose() {

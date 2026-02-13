@@ -7,11 +7,8 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.inf1009.engine.GameMaster;
-import com.inf1009.engine.interfaces.IScreen;
 
-public class EndScreen implements IScreen {
-
-    private final GameMaster game;
+public class EndScreen extends AbstractScreen {
 
     private SpriteBatch batch;
     private ShapeRenderer shape;
@@ -22,18 +19,19 @@ public class EndScreen implements IScreen {
     private float exitX   = 220, exitY   = 100, exitW   = 200, exitH   = 60;
 
     public EndScreen(GameMaster game) {
-        this.game = game;
+        super(game);
     }
 
     @Override
     public void show() {
         batch = game.getBatch();
-        if (shape == null) shape = new ShapeRenderer();
-        if (font == null) font = new BitmapFont();
+        shape = new ShapeRenderer();
+        font = new BitmapFont();
     }
 
     @Override
     public void render(float dt) {
+
         Gdx.gl.glClearColor(0.02f, 0.02f, 0.02f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -52,7 +50,6 @@ public class EndScreen implements IScreen {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             game.getSceneManager().setScreen("sim");
-            return;
         }
 
         if (isClicked(resumeX, resumeY, resumeW, resumeH)) {
@@ -65,6 +62,7 @@ public class EndScreen implements IScreen {
     }
 
     private boolean isClicked(float x, float y, float w, float h) {
+
         if (!Gdx.input.justTouched()) return false;
 
         float mx = Gdx.input.getX();
@@ -72,8 +70,6 @@ public class EndScreen implements IScreen {
 
         return mx >= x && mx <= x + w && my >= y && my <= y + h;
     }
-
-    @Override public void hide() { }
 
     @Override
     public void dispose() {

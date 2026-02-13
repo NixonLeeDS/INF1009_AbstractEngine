@@ -1,10 +1,8 @@
 package com.inf1009.engine.scene;
 
 import com.inf1009.engine.GameMaster;
-import com.inf1009.engine.interfaces.IScreen;
 
-// Base screen providing shared access to GameMaster
-public abstract class AbstractScreen implements IScreen {
+public abstract class AbstractScreen {
 
     protected final GameMaster game;
 
@@ -12,13 +10,15 @@ public abstract class AbstractScreen implements IScreen {
         this.game = game;
     }
 
-    @Override
+    public abstract void show();
+
+    public abstract void render(float dt);
+
     public void hide() {
-        // optional default behaviour
+        // optional override
     }
 
-    @Override
     public void dispose() {
-        // optional default behaviour
+        // optional override
     }
 }

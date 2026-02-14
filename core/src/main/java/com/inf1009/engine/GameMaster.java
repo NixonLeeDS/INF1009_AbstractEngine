@@ -31,10 +31,10 @@ public class GameMaster extends ApplicationAdapter {
 
         io.registerDevice(com.inf1009.engine.input.KeyboardDevice.wasd());
 
-        sm.addScreen("start", new StartScene());
+        sm.addScreen("start", new StartScene(this));
         sm.addScreen("sim", new SimulatorScene(this));
-        sm.addScreen("end", new EndScene());
-        sm.setScreen("sim");
+        sm.addScreen("end", new EndScene(this));
+        sm.setScreen("start");
     }
 
     @Override
@@ -56,10 +56,8 @@ public class GameMaster extends ApplicationAdapter {
     public SceneManager getSceneManager() { return sm; }
     public MovementManager getMovementManager() { return mm; }
     public CollisionManager getCollisionManager() { return cm; }
-
     public InputManager getInputManager() { return io; }
     public InputManager getIOManager() { return io; }
-
     public SoundManager getSoundManager() { return snd; }
     public SpriteBatch getBatch() { return batch; }
 }

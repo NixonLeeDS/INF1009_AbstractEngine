@@ -9,63 +9,42 @@ public class InputManager {
 
     // Fields
     private List<InputDevice> inputDevices = new ArrayList<>();
-    private InputState playerInput = new InputState();
-
-    // Constructors
-    public InputManager() {}
-
-    public InputManager(List<InputDevice> inputDevices) {
-        if (inputDevices != null) this.inputDevices.addAll(inputDevices);
-    }
 
     // Register device
     public void registerDevice(InputDevice device) {
         if (device != null) inputDevices.add(device);
     }
 
-    // Get input state
-    public InputState getInputState() {
-        return playerInput;
-    }
-
-    // Update
+    // Update all devices
     public void update() {
-        processInput();
+        for (InputDevice d : inputDevices) {
+            d.readInput();
+        }
     }
 
-    // Merge device inputs
-    public void processInput() {
+    // Read a specific device input by index
+    public InputState readDevice(int index) {
+        if (index < 0 || index >= inputDevices.size()) return new InputState();
+        return inputDevices.get(index).getInputState();
+    }
 
-        playerInput.reset();
+    // Optional merged input (not used for 2 players)
+    public InputState getInputState() {
+        InputState merged = new InputState();
 
         for (InputDevice d : inputDevices) {
-
-            d.readInput();
             InputState s = d.getInputState();
 
-            playerInput.setMoveX(
-                    playerInput.getMoveX() + s.getMoveX()
-            );
-
-            playerInput.setMoveY(
-                    playerInput.getMoveY() + s.getMoveY()
-            );
-
-            playerInput.setJump(
-                    playerInput.isJump() || s.isJump()
-            );
+            merged.setMoveX(merged.getMoveX() + s.getMoveX());
+            merged.setMoveY(merged.getMoveY() + s.getMoveY());
+            merged.setJump(merged.isJump() || s.isJump());
         }
 
-        if (playerInput.getMoveX() > 1)
-            playerInput.setMoveX(1);
+        return merged;
+    }
 
-        if (playerInput.getMoveX() < -1)
-            playerInput.setMoveX(-1);
-
-        if (playerInput.getMoveY() > 1)
-            playerInput.setMoveY(1);
-
-        if (playerInput.getMoveY() < -1)
-            playerInput.setMoveY(-1);
+    // Clear devices (useful if you re-enter scene)
+    public void clearDevices() {
+        inputDevices.clear();
     }
 }

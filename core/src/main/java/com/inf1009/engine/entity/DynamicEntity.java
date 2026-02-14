@@ -94,8 +94,16 @@ public class DynamicEntity extends GameEntity implements IMovable, ICollidable {
 
     @Override
     public void onCollision(ICollidable other) {
-        onCollisionEnter(other);
+
+        if (other == null) return;
+
+        // Simple vertical stop logic for demo
+        if (other.getBounds().y <= this.y) {
+            velocity.y = 0;
+            setAcceleration(0f, 0f);
+        }
     }
+
 
     public void onCollisionEnter(ICollidable other) {
     }

@@ -1,11 +1,14 @@
 package com.inf1009.engine.manager;
 
+import com.inf1009.engine.entity.GameEntity;
+import com.inf1009.engine.interfaces.ICollidableListener;
 import com.inf1009.engine.interfaces.IVolume;
 import com.inf1009.engine.sound.Sound;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SoundManager implements IVolume {
+
+public class SoundManager implements IVolume, ICollidableListener {
 
     // Fields
     private List<Sound> soundList = new ArrayList<>();
@@ -14,7 +17,7 @@ public class SoundManager implements IVolume {
     private boolean muted = false;
 
     // Add sound to manager
-    public void AddSound(Sound s) {
+    public void addSound(Sound s) {
         if (s != null) soundList.add(s);
     }
 
@@ -64,4 +67,19 @@ public class SoundManager implements IVolume {
         if (v > 100) return 100;
         return v;
     }
+
+
+    //collidable listener
+    @Override
+    public void onCollision(GameEntity entity1, GameEntity entity2) {
+        if (!muted) {
+            for (Sound s : soundList) {
+                if (!s.isMusic()) {   // play only SFX, not music
+                    s.playSound(s.getSoundFile(), s.isMusic());
+
+                }
+            }
+        }
+    }
+
 }

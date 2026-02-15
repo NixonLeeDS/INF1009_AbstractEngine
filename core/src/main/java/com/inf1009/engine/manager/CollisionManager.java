@@ -2,41 +2,58 @@ package com.inf1009.engine.manager;
 
 import com.inf1009.engine.collision.CollisionDetection;
 import com.inf1009.engine.collision.CollisionHandling;
+import com.inf1009.engine.entity.GameEntity;
 import com.inf1009.engine.interfaces.ICollidable;
+import com.inf1009.engine.interfaces.ICollidableListener;
+import com.inf1009.engine.interfaces.IEntityProvider;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class CollisionManager {
 
-    // Fields
-    private List<ICollidable> collidables = new ArrayList<>();
+    private IEntityProvider entityProvider;
     private CollisionDetection detection = new CollisionDetection();
     private CollisionHandling handling = new CollisionHandling();
+    private List<ICollidableListener> listeners = new ArrayList<>();
 
-    // Register collidable
-    public void register(ICollidable c) {
-        if (c != null && !collidables.contains(c))
-            collidables.add(c);
+    public CollisionManager(IEntityProvider provider) {
+        this.entityProvider = provider;
     }
 
-    // Unregister collidable
-    public void unregister(ICollidable c) {
-        collidables.remove(c);
-    }
-
-    // Detect and resolve collisions
-    public void checkCollisions() {
-        for (CollisionDetection.Pair p : detection.detectAll(collidables)) {
-            handling.resolve(p.a, p.b);
+    public void addCollisionListener(ICollidableListener listener) {
+        if (listener != null && !listeners.contains(listener)) {
+            listeners.add(listener);
         }
     }
 
-    // Clear all collidables
-    public void clearCollisions() {
-        collidables.clear();
+    public void removeCollisionListener(ICollidableListener listener) {
+        listeners.remove(listener);
     }
 
-    // Update manager
+    public void checkCollisions() {
+
+        List<ICollidable> collidables = new ArrayList<>();
+
+        for (GameEntity e : entityProvider.getEntities()) {
+            if (e instanceof ICollidable) {
+                collidables.add((ICollidable) e);
+            }
+        }
+
+        for (CollisionDetection.Pair p : detection.detectAll(collidables)) {
+
+            handling.resolve(p.a, p.b);
+
+            GameEntity e1 = (GameEntity) p.a;
+            GameEntity e2 = (GameEntity) p.b;
+
+            for (ICollidableListener listener : listeners) {
+                listener.onCollision(e1, e2);
+            }
+        }
+    }
+
     public void update() {
         checkCollisions();
     }

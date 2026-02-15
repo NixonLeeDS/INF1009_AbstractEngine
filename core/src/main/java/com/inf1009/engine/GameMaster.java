@@ -25,16 +25,18 @@ public class GameMaster extends ApplicationAdapter {
         em = new EntityManager();
         sm = new SceneManager();
         mm = new MovementManager();
-        cm = new CollisionManager();
+        cm = new CollisionManager(em);
+        cm.addCollisionListener(snd);
         io = new InputManager();
         snd = new SoundManager();
+        
 
         io.registerDevice(com.inf1009.engine.input.KeyboardDevice.wasd());
 
-        sm.addScreen("start", new StartScene(this));
-        sm.addScreen("sim", new SimulatorScene(this));
-        sm.addScreen("end", new EndScene(this));
-        sm.setScreen("start");
+        sm.addScene("start", new StartScene(this));
+        sm.addScene("sim", new SimulatorScene(this));
+        sm.addScene("end", new EndScene(this));
+        sm.setScene("start");
     }
 
     @Override

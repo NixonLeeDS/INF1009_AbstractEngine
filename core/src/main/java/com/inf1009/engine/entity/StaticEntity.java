@@ -21,8 +21,10 @@ public class StaticEntity extends GameEntity implements ICollidable {
 
     @Override
     public void render(ShapeRenderer shape) {
+        shape.setColor(0.3f, 0.3f, 0.3f, 1f);
         shape.rect(x, y, width, height);
     }
+
 
     // ICollidable methods
     @Override

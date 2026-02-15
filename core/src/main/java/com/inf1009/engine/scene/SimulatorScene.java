@@ -136,7 +136,7 @@ public class SimulatorScene extends Scene {
             showCollisionBounds = !showCollisionBounds;
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE))
-            game.getSceneManager().setScreen("end");
+            game.getSceneManager().setScene("end");
     }
 
     private void applyInput(DynamicEntity entity, InputState input) {
@@ -199,7 +199,7 @@ public class SimulatorScene extends Scene {
         boolean hitB = fallingHazard.getBounds().overlaps(entityB.getBounds());
 
         if (hitGround || hitA || hitB) {
-            entityProvider.removeEntities(fallingHazard);
+            entityProvider.removeEntity(fallingHazard);
             spawnHazard();
         }
     }
@@ -304,4 +304,10 @@ public class SimulatorScene extends Scene {
         if (batch != null) batch.dispose();
         if (font != null) font.dispose();
     }
+
+    @Override
+    public void resize(int width, int height) {
+    }
+
 }
+

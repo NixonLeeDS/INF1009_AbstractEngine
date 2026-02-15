@@ -9,12 +9,12 @@ public class SceneManager {
     private Scene currentScene;
     private Map<String, Scene> scenes = new HashMap<>();
 
-    public void addScreen(String name, Scene scene) {
+    public void addScene(String name, Scene scene) {
         if (name == null || scene == null) return;
         scenes.put(name, scene);
     }
 
-    public void setScreen(String name) {
+    public void setScene(String name) {
         if (currentScene != null) currentScene.hide();
         currentScene = scenes.get(name);
         if (currentScene != null) currentScene.show();
@@ -22,13 +22,6 @@ public class SceneManager {
 
     public Scene getCurrentScene() {
         return currentScene;
-    }
-
-    public void transitionTo(String name, Transition effect) {
-        Scene next = scenes.get(name);
-        if (next == null) return;
-        if (effect != null) effect.apply(currentScene, next);
-        setScreen(name);
     }
 
     public void update(float deltaTime) {
@@ -39,9 +32,5 @@ public class SceneManager {
         for (Scene s : scenes.values()) s.dispose();
         scenes.clear();
         currentScene = null;
-    }
-
-    public interface Transition {
-        void apply(Scene from, Scene to);
     }
 }

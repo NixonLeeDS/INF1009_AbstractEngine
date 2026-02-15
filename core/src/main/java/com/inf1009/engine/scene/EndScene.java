@@ -55,10 +55,10 @@ public class EndScene extends Scene {
 
         // Click handling
         if (isClicked(restartX, restartY, restartW, restartH)) {
-            game.getSceneManager().setScreen("sim");
+            game.getSceneManager().setScene("sim");
         }
         else if (isClicked(menuX, menuY, menuW, menuH)) {
-            game.getSceneManager().setScreen("start");
+            game.getSceneManager().setScene("start");
         }
     }
 
@@ -80,4 +80,9 @@ public class EndScene extends Scene {
         if (shape != null) shape.dispose();
         if (font != null) font.dispose();
     }
+
+    @Override
+    public void resize(int width, int height) {
+    }
+
 }

@@ -43,7 +43,7 @@ public class InputManager {
         return merged;
     }
 
-    // Clear devices (useful if you re-enter scene)
+    // Clear devices
     public void clearDevices() {
         inputDevices.clear();
     }

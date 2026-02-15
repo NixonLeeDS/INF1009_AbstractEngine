@@ -7,6 +7,7 @@ public abstract class Scene {
     public abstract void show();
     public abstract void render(float deltaTime);
     public abstract void hide();
+    public abstract void resize(int width, int height);
     public abstract void dispose();
 
     public boolean isLoaded() {

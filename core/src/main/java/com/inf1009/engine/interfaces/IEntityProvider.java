@@ -9,5 +9,5 @@ public interface IEntityProvider {
 
     void addEntity(GameEntity entity);
 
-    void removeEntities(GameEntity entity);
+    void removeEntity(GameEntity entity);
 }

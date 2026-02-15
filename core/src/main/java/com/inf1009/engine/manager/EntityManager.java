@@ -2,6 +2,7 @@ package com.inf1009.engine.manager;
 
 import com.inf1009.engine.entity.GameEntity;
 import com.inf1009.engine.interfaces.IEntityProvider;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,18 +14,23 @@ public class EntityManager implements IEntityProvider {
 
     public void update(float deltaTime) {
 
+        // Add queued entities
         if (!entitiesToAdd.isEmpty()) {
             entities.addAll(entitiesToAdd);
             entitiesToAdd.clear();
         }
 
+        // Remove queued entities
         if (!entitiesToRemove.isEmpty()) {
             entities.removeAll(entitiesToRemove);
             entitiesToRemove.clear();
         }
 
+        // Update entities
         for (GameEntity e : entities) {
+
             e.update(deltaTime);
+
         }
 
         removeDeadEntities();
@@ -34,8 +40,8 @@ public class EntityManager implements IEntityProvider {
         if (e != null) entitiesToAdd.add(e);
     }
 
-    public void removeEntities(GameEntity entity) {
-        if (entity != null) entitiesToRemove.add(entity);
+    public void removeEntity(GameEntity entity) {
+    if (entity != null) entitiesToRemove.add(entity);
     }
 
     public List<GameEntity> getEntities() {

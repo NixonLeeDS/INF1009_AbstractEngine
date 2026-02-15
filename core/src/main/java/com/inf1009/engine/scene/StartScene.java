@@ -50,7 +50,7 @@ public class StartScene extends Scene {
         batch.end();
 
         if (isClicked(startX, startY, startW, startH)) {
-            game.getSceneManager().setScreen("sim");
+            game.getSceneManager().setScene("sim");
         } else if (isClicked(exitX, exitY, exitW, exitH)) {
             Gdx.app.exit();
         }
@@ -72,4 +72,12 @@ public class StartScene extends Scene {
         if (shape != null) shape.dispose();
         if (font != null) font.dispose();
     }
+
+
+    @Override
+    public void resize(int width, int height) {
+    }
+
+    
+
 }

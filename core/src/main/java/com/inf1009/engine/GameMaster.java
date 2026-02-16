@@ -34,7 +34,6 @@ public class GameMaster extends ApplicationAdapter {
         snd = new SoundManager();
         cm  = new CollisionManager(em);
 
-        cm.addCollisionListener(snd);   // Register sound as collision listener
 
         // Load audio assets
         Sound bgm = new Sound("audio/bgm.wav", true, 100);

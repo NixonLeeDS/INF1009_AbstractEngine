@@ -8,6 +8,8 @@ public interface IEntityProvider {
     List<GameEntity> getEntities();
 
     void addEntity(GameEntity entity);
+    
+    void clear();
 
     void removeEntity(GameEntity entity);
 }

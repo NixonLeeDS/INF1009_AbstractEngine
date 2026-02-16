@@ -7,307 +7,226 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
-import com.inf1009.engine.GameMaster;
 import com.inf1009.engine.entity.DynamicEntity;
 import com.inf1009.engine.entity.GameEntity;
 import com.inf1009.engine.entity.StaticEntity;
-import com.inf1009.engine.input.InputState;
-import com.inf1009.engine.input.KeyboardDevice;
 import com.inf1009.engine.interfaces.IEntityProvider;
+import com.inf1009.engine.interfaces.IMovementManager;
+import com.inf1009.engine.interfaces.IInputManager;
+import com.inf1009.engine.manager.SceneManager;
 
 import java.util.List;
 
 public class SimulatorScene extends Scene {
 
-    // UML fields
+    // Engine dependencies
+    private final IEntityProvider entityProvider;
+    private final IMovementManager movementManager;
+    private final IInputManager inputManager;
+    private final SceneManager sceneManager;
+    private final SpriteBatch batch;
+
+    // Simulation state
     private boolean simulationRunning = true;
     private float simulationTime = 0f;
-    private boolean showCollisionBounds = false;
-
-    // Core
-    private final GameMaster game;
-    private final IEntityProvider entityProvider;
-
-    // Rendering
-    private ShapeRenderer shape;
-    private SpriteBatch batch;
-    private BitmapFont font;
 
     // Demo entities
-    private DynamicEntity entityA;
-    private DynamicEntity entityB;
-    private DynamicEntity fallingHazard;
+    private DynamicEntity controllableEntity;
+    private DynamicEntity autonomousEntity;
+    private StaticEntity boundarySurface;
 
-    private StaticEntity ground;
-    private StaticEntity leftWall;
-    private StaticEntity rightWall;
-    private StaticEntity topWall;
+    // Rendering utilities
+    private ShapeRenderer shapeRenderer;
+    private BitmapFont overlayFont;
 
-    private boolean gravityEnabled = true;
-
-    public SimulatorScene(GameMaster game) {
-        this.game = game;
-        this.entityProvider = game.getEntityManager();
+    public SimulatorScene(
+            IEntityProvider entityProvider,
+            IMovementManager movementManager,
+            IInputManager inputManager,
+            SpriteBatch batch,
+            SceneManager sceneManager
+    ) {
+        this.entityProvider = entityProvider;
+        this.movementManager = movementManager;
+        this.inputManager = inputManager;
+        this.batch = batch;
+        this.sceneManager = sceneManager;
     }
 
     @Override
     public void show() {
 
-        if (shape == null) shape = new ShapeRenderer();
-        if (batch == null) batch = new SpriteBatch();
-        if (font == null) font = new BitmapFont();
+        shapeRenderer = new ShapeRenderer(); // Initialize renderer
+        overlayFont = new BitmapFont();      // Initialize overlay font
 
+        entityProvider.clear(); // Reset simulation world
+
+        float w = Gdx.graphics.getWidth();
+        float h = Gdx.graphics.getHeight();
+
+        boundarySurface = new StaticEntity(0, 0, w, 40); // Ground surface
+        controllableEntity = new DynamicEntity(200, 200, 45, 45); // Player entity
+        autonomousEntity = new DynamicEntity(w / 2f, h - 80f, 80, 80); // Falling entity
+
+        entityProvider.addEntity(boundarySurface);
+        entityProvider.addEntity(controllableEntity);
+        entityProvider.addEntity(autonomousEntity);
+
+        simulationTime = 0f;
         isLoaded = true;
-
-        game.getInputManager().clearDevices();
-        game.getInputManager().registerDevice(KeyboardDevice.wasd());
-        game.getInputManager().registerDevice(KeyboardDevice.arrows());
-
-        resetWorld();
     }
 
     @Override
     public void render(float dt) {
 
-        handleSystemKeys();
-        clearScreen();
-
-        if (simulationRunning) {
-            update(dt);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            sceneManager.setScene("end"); // Transition to end scene
         }
 
-        renderWorld();
-        renderOverlay();
+        clearScreen(); // Clear frame
+
+        if (simulationRunning) {
+            update(dt); // Update simulation
+        }
+
+        renderWorld();   // Draw entities
+        renderOverlay(); // Draw UI overlay
     }
 
-    // UML update
-    public void update(float dt) {
+    private void update(float dt) {
 
-        simulationTime += dt;
+        simulationTime += dt; // Update timer
 
-        game.getInputManager().update();
+        inputManager.update(); // Update input system
 
-        InputState inputA = game.getInputManager().readDevice(0);
-        InputState inputB = game.getInputManager().readDevice(1);
+        float moveX = inputManager.getInputState().getMoveX();
+        boolean jump = inputManager.getInputState().isJump();
 
-        applyInput(entityA, inputA);
-        applyInput(entityB, inputB);
+        movementManager.applyInput(controllableEntity, moveX, 0f, 300f); // Apply horizontal movement
 
-        applyGravity(entityA, dt);
-        applyGravity(entityB, dt);
-        applyGravity(fallingHazard, dt);
+        if (jump && Math.abs(controllableEntity.getVelocity().y) < 0.1f) {
+            Vector2 v = controllableEntity.getVelocity();
+            v.y = 500f;
+            controllableEntity.setVelocity(v);
+        }
 
-        game.getEntityManager().update(dt);
+        movementManager.applyGravity(controllableEntity, 1200f * dt); // Apply gravity to player
+        movementManager.applyGravity(autonomousEntity, 900f * dt);    // Apply gravity to hazard
 
-        clampToGround(entityA);
-        clampToGround(entityB);
+        movementManager.applyVelocity(controllableEntity, dt); // Update player position
+        movementManager.applyVelocity(autonomousEntity, dt);   // Update hazard position
 
-        clampToWalls(entityA);
-        clampToWalls(entityB);
+        clampToWorld(controllableEntity); // Constrain player inside screen
 
-        handleHazardLogic();
+        if (autonomousEntity.getY() <= boundarySurface.getY() + boundarySurface.getHeight()) {
+            respawnAutonomousEntity(); // Respawn falling entity
+        }
+
+        if (controllableEntity.getY() <= boundarySurface.getY() + boundarySurface.getHeight()) {
+
+            controllableEntity.setPosition(
+                    controllableEntity.getX(),
+                    boundarySurface.getY() + boundarySurface.getHeight()
+            );
+
+            Vector2 v = controllableEntity.getVelocity();
+            v.y = 0;
+            controllableEntity.setVelocity(v);
+        }
     }
 
-    // Toggle methods (UML)
-    public void toggleSimulation() {
-        simulationRunning = !simulationRunning;
+    private void respawnAutonomousEntity() {
+
+        entityProvider.removeEntity(autonomousEntity); // Remove old instance
+
+        float w = Gdx.graphics.getWidth();
+        float h = Gdx.graphics.getHeight();
+
+        autonomousEntity = new DynamicEntity(
+                100 + (float)Math.random() * (w - 200),
+                h - 80f,
+                80, 80
+        );
+
+        entityProvider.addEntity(autonomousEntity); // Add new instance
     }
 
-    public void toggleGravity() {
-        gravityEnabled = !gravityEnabled;
-    }
+    private void clampToWorld(DynamicEntity entity) {
 
-    public void spawnEntity(GameEntity entity) {
-        entityProvider.addEntity(entity);
-    }
+        float worldWidth = Gdx.graphics.getWidth();
+        float worldHeight = Gdx.graphics.getHeight();
 
-    private void handleSystemKeys() {
+        if (entity.getX() < 0)
+            entity.setPosition(0, entity.getY());
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.P))
-            toggleSimulation();
+        if (entity.getX() + entity.getWidth() > worldWidth)
+            entity.setPosition(worldWidth - entity.getWidth(), entity.getY());
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.G))
-            toggleGravity();
+        if (entity.getY() + entity.getHeight() > worldHeight) {
+            entity.setPosition(entity.getX(),
+                    worldHeight - entity.getHeight());
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.R))
-            resetWorld();
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.C))
-            showCollisionBounds = !showCollisionBounds;
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE))
-            game.getSceneManager().setScene("end");
-    }
-
-    private void applyInput(DynamicEntity entity, InputState input) {
-
-        if (entity == null || input == null) return;
-
-        entity.setDirection(input.getMoveX(), 0f);
-        entity.setSpeed(220f);
-
-        if (input.isJump() && entity.getVelocity().y == 0f) {
             Vector2 v = entity.getVelocity();
-            v.y = 320f;
+            v.y = 0;
             entity.setVelocity(v);
         }
     }
 
-    private void applyGravity(DynamicEntity entity, float dt) {
-
-        if (entity == null || !gravityEnabled) return;
-
-        Vector2 v = entity.getVelocity();
-        v.y += -900f * dt;
-        entity.setVelocity(v);
-    }
-
-    private void clampToGround(DynamicEntity d) {
-
-        float groundTop = ground.getY() + ground.getHeight();
-
-        if (d.getY() < groundTop) {
-            d.setPosition(d.getX(), groundTop);
-            Vector2 v = d.getVelocity();
-            v.y = 0f;
-            d.setVelocity(v);
-        }
-    }
-
-    private void clampToWalls(DynamicEntity d) {
-
-        float leftLimit = leftWall.getX() + leftWall.getWidth();
-        float rightLimit = rightWall.getX() - d.getWidth();
-        float topLimit = topWall.getY();
-
-        if (d.getX() < leftLimit)
-            d.setPosition(leftLimit, d.getY());
-
-        if (d.getX() > rightLimit)
-            d.setPosition(rightLimit, d.getY());
-
-        if (d.getY() > topLimit - d.getHeight())
-            d.setPosition(d.getX(), topLimit - d.getHeight());
-    }
-
-    private void handleHazardLogic() {
-
-        if (fallingHazard == null) return;
-
-        boolean hitGround = fallingHazard.getY() <= 0;
-        boolean hitA = fallingHazard.getBounds().overlaps(entityA.getBounds());
-        boolean hitB = fallingHazard.getBounds().overlaps(entityB.getBounds());
-
-        if (hitGround || hitA || hitB) {
-            entityProvider.removeEntity(fallingHazard);
-            spawnHazard();
-        }
-    }
-
-    private void spawnHazard() {
-
-        float w = Gdx.graphics.getWidth();
-        float h = Gdx.graphics.getHeight();
-
-        fallingHazard = new DynamicEntity(
-                60f + (float) Math.random() * (w - 120f),
-                h - 80f,
-                36f,
-                36f
-        );
-
-        fallingHazard.setVelocity(new Vector2(0f, -240f));
-        entityProvider.addEntity(fallingHazard);
-    }
-
-    private void resetWorld() {
-
-        simulationTime = 0f;
-
-        game.getEntityManager().clear();
-
-        float w = Gdx.graphics.getWidth();
-        float h = Gdx.graphics.getHeight();
-
-        ground = new StaticEntity(0, 0, w, 40);
-        leftWall = new StaticEntity(0, 0, 20, h);
-        rightWall = new StaticEntity(w - 20, 0, 20, h);
-        topWall = new StaticEntity(0, h - 20, w, 20);
-
-        entityA = new DynamicEntity(120, 220, 45, 45);
-        entityB = new DynamicEntity(260, 220, 45, 45);
-
-        entityProvider.addEntity(ground);
-        entityProvider.addEntity(leftWall);
-        entityProvider.addEntity(rightWall);
-        entityProvider.addEntity(topWall);
-        entityProvider.addEntity(entityA);
-        entityProvider.addEntity(entityB);
-
-        spawnHazard();
-    }
-
     private void renderWorld() {
 
-        shape.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
         List<GameEntity> entities = entityProvider.getEntities();
 
         for (GameEntity e : entities) {
 
-            if (e == entityA) {
-                shape.setColor(0f, 0.8f, 1f, 1f);
-            }
-            else if (e == entityB) {
-                shape.setColor(1f, 0.4f, 0f, 1f);
-            }
-            else if (e == fallingHazard) {
-                shape.setColor(0.9f, 0.1f, 0.1f, 1f);
-            }
-            else {
-                shape.setColor(0.3f, 0.3f, 0.3f, 1f);
-            }
+            if (e == controllableEntity)
+                shapeRenderer.setColor(0f, 0.8f, 1f, 1f);
+            else
+                shapeRenderer.setColor(1f, 0f, 0f, 1f);
 
-            shape.rect(e.getX(), e.getY(), e.getWidth(), e.getHeight());
+            shapeRenderer.rect(e.getX(), e.getY(),
+                    e.getWidth(), e.getHeight());
         }
 
-        shape.end();
+        shapeRenderer.end();
     }
 
     private void renderOverlay() {
 
         batch.begin();
 
-        font.draw(batch,
-                "Press ESC to end simulation",
+        overlayFont.draw(batch,
+                "Press ESC to End Simulation",
                 20,
                 Gdx.graphics.getHeight() - 20);
 
-        font.draw(batch,
-                String.format("Time: %.2f", simulationTime),
-                Gdx.graphics.getWidth() - 140,
+        String timeText = "Time: " + String.format("%.2f", simulationTime);
+
+        overlayFont.draw(batch,
+                timeText,
+                Gdx.graphics.getWidth() - 150,
                 Gdx.graphics.getHeight() - 20);
 
         batch.end();
     }
 
     private void clearScreen() {
-        Gdx.gl.glClearColor(0.10f, 0.12f, 0.14f, 1f);
+
+        Gdx.gl.glClearColor(0.1f, 0.12f, 0.14f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
     }
 
     @Override public void hide() {}
+    @Override public void resize(int width, int height) {}
 
     @Override
     public void dispose() {
-        if (shape != null) shape.dispose();
-        if (batch != null) batch.dispose();
-        if (font != null) font.dispose();
+        shapeRenderer.dispose();
+        overlayFont.dispose();
     }
 
-    @Override
-    public void resize(int width, int height) {
+    public void spawnEntity(GameEntity entity) {
+        entityProvider.addEntity(entity); // Add entity to simulation
     }
-
 }
-

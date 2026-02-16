@@ -9,17 +9,16 @@ import com.inf1009.engine.GameMaster;
 
 public class StartScene extends Scene {
 
-    // Core reference
     private final GameMaster game;
 
-    // Rendering
     private ShapeRenderer shape;
     private BitmapFont font;
     private SpriteBatch batch;
 
-    // Button bounds
-    private float startX = 220, startY = 240, startW = 200, startH = 60;
-    private float exitX  = 220, exitY  = 160, exitW  = 200, exitH  = 60;
+    // Buttons
+    private float startX = 220, startY = 280, startW = 200, startH = 60;
+    private float settingsX = 220, settingsY = 200, settingsW = 200, settingsH = 60;
+    private float exitX  = 220, exitY  = 120, exitW  = 200, exitH  = 60;
 
     public StartScene(GameMaster game) {
         this.game = game;
@@ -39,19 +38,28 @@ public class StartScene extends Scene {
         Gdx.gl.glClearColor(0.08f, 0.08f, 0.08f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        // Draw buttons
         shape.begin(ShapeRenderer.ShapeType.Filled);
         shape.rect(startX, startY, startW, startH);
+        shape.rect(settingsX, settingsY, settingsW, settingsH);
         shape.rect(exitX, exitY, exitW, exitH);
         shape.end();
 
+        // Draw text
         batch.begin();
         font.draw(batch, "START", startX + 70, startY + 38);
+        font.draw(batch, "SETTINGS", settingsX + 55, settingsY + 38);
         font.draw(batch, "EXIT", exitX + 80, exitY + 38);
         batch.end();
 
+        // Button logic
         if (isClicked(startX, startY, startW, startH)) {
             game.getSceneManager().setScene("sim");
-        } else if (isClicked(exitX, exitY, exitW, exitH)) {
+        }
+        else if (isClicked(settingsX, settingsY, settingsW, settingsH)) {
+            game.getSceneManager().setScene("settings");
+        }
+        else if (isClicked(exitX, exitY, exitW, exitH)) {
             Gdx.app.exit();
         }
     }
@@ -73,11 +81,6 @@ public class StartScene extends Scene {
         if (font != null) font.dispose();
     }
 
-
     @Override
-    public void resize(int width, int height) {
-    }
-
-    
-
+    public void resize(int width, int height) {}
 }

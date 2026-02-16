@@ -1,5 +1,6 @@
 package com.inf1009.engine.manager;
 
+import com.badlogic.gdx.Gdx;
 import com.inf1009.engine.input.InputDevice;
 import com.inf1009.engine.input.InputState;
 import com.inf1009.engine.interfaces.IInputManager;
@@ -57,9 +58,11 @@ public class InputManager implements IInputManager {
 
     @Override
     public boolean isActionJustPressed(String action) {
-        // simple stub implementation
-        return false;
+        Integer keyCode = keyBindings.get(action);
+        if (keyCode == null) return false;
+        return Gdx.input.isKeyJustPressed(keyCode);
     }
+
 
     // Optional helper
 

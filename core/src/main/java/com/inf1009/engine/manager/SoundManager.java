@@ -1,5 +1,6 @@
 package com.inf1009.engine.manager;
 
+import com.inf1009.engine.entity.DynamicEntity;
 import com.inf1009.engine.entity.GameEntity;
 import com.inf1009.engine.interfaces.ICollidableListener;
 import com.inf1009.engine.interfaces.ISoundManager;
@@ -9,38 +10,55 @@ import com.inf1009.engine.sound.Sound;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SoundManager implements ISoundManager, IVolume, ICollidableListener {
+public class SoundManager implements IVolume, ICollidableListener, ISoundManager {
 
-    private List<Sound> soundList = new ArrayList<>();
+    private final List<Sound> soundList = new ArrayList<>();
     private int masterVol = 100;
     private int musicVol = 100;
     private boolean muted = false;
 
-    // Basic registration
+    // Track BGM so unmute can resume
+    private String currentMusicFile = null;
+
+    // Setup
     public void addSound(Sound s) {
         if (s != null) soundList.add(s);
     }
 
     // ISoundManager
-
     @Override
     public void playSound(String name) {
         if (muted) return;
 
         for (Sound s : soundList) {
-            if (!s.isMusic() && s.getSoundFile().equals(name)) {
+            if (!s.isMusic() && name != null && name.equals(s.getSoundFile())) {
+                s.setVolume(masterVol);
                 s.playSound(name, false);
+                return;
+            }
+        }
+
+        // fallback: play any first SFX if exact match not found
+        for (Sound s : soundList) {
+            if (!s.isMusic()) {
+                s.setVolume(masterVol);
+                s.playSound(name, false);
+                return;
             }
         }
     }
 
     @Override
     public void playMusic(String name) {
+        currentMusicFile = name;
         if (muted) return;
 
         for (Sound s : soundList) {
-            if (s.isMusic() && s.getSoundFile().equals(name)) {
+            if (s.isMusic()) {
+                s.setSoundFile(name);
+                s.setVolume(musicVol);
                 s.playSound(name, true);
+                return;
             }
         }
     }
@@ -56,12 +74,30 @@ public class SoundManager implements ISoundManager, IVolume, ICollidableListener
 
     @Override
     public void pauseMusic() {
-        // simple stub
+        for (Sound s : soundList) {
+            if (s.isMusic()) {
+                s.pauseMusic();
+            }
+        }
     }
 
     @Override
     public void resumeMusic() {
-        // simple stub
+        if (muted) return;
+
+        // resume existing music instance
+        for (Sound s : soundList) {
+            if (s.isMusic()) {
+                s.setVolume(musicVol);
+                s.resumeMusic();
+                return;
+            }
+        }
+
+        // fallback: if disposed earlier, restart
+        if (currentMusicFile != null) {
+            playMusic(currentMusicFile);
+        }
     }
 
     @Override
@@ -89,8 +125,18 @@ public class SoundManager implements ISoundManager, IVolume, ICollidableListener
     @Override
     public void mute() {
         muted = true;
+
+        // SFX volume to 0 (future SFX blocked by playSound() early return)
         for (Sound s : soundList) {
-            s.setVolume(0);
+            if (!s.isMusic()) s.setVolume(0);
+        }
+
+        // Pause music + volume 0
+        for (Sound s : soundList) {
+            if (s.isMusic()) {
+                s.setVolume(0);
+                s.pauseMusic();
+            }
         }
     }
 
@@ -98,6 +144,7 @@ public class SoundManager implements ISoundManager, IVolume, ICollidableListener
     public void unmute() {
         muted = false;
         applyVolumes();
+        resumeMusic();
     }
 
     @Override
@@ -108,47 +155,36 @@ public class SoundManager implements ISoundManager, IVolume, ICollidableListener
         soundList.clear();
     }
 
-    // Collision listener
+    // IVolume (your old interface)
+    @Override
+    public int getMasterVol() { return masterVol; }
 
     @Override
-    public void onCollision(GameEntity entity1, GameEntity entity2) {
-        if (!muted) {
-            for (Sound s : soundList) {
-                if (!s.isMusic()) {
-                    s.playSound(s.getSoundFile(), false);
-                }
-            }
+    public void setMasterVol(int vol) { setMasterVolume(vol); }
+
+    @Override
+    public int getMusicVol() { return musicVol; }
+
+    @Override
+    public void setMusicVol(int vol) { setMusicVolume(vol); }
+
+    // Collision SFX hook
+    @Override
+    public void onCollision(GameEntity e1, GameEntity e2) {
+
+        if ((e1.getClass() == DynamicEntity.class &&
+            e2.getClass() == DynamicEntity.class)) {
+
+            playSound("audio/hit.wav");
         }
     }
 
-    // IVolume
 
-    @Override
-    public int getMasterVol() {
-        return masterVol;
-    }
-
-    @Override
-    public void setMasterVol(int vol) {
-        setMasterVolume(vol);
-    }
-
-    @Override
-    public int getMusicVol() {
-        return musicVol;
-    }
-
-    @Override
-    public void setMusicVol(int vol) {
-        setMusicVolume(vol);
-    }
-
-    // Helper
-
+    // Helpers
     private void applyVolumes() {
         for (Sound s : soundList) {
-            int volume = s.isMusic() ? musicVol : masterVol;
-            s.setVolume(volume);
+            if (s.isMusic()) s.setVolume(musicVol);
+            else s.setVolume(masterVol);
         }
     }
 

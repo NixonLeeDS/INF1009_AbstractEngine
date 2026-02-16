@@ -13,36 +13,58 @@ import java.util.Map;
 // Aggregates input from multiple devices
 public class InputManager implements IInputInterface {
 
-    private List<InputDevice> inputDevices = new ArrayList<>();
+    // Registered input devices
+    private List<InputDevice> inputDevices;
+
+    // Stores merged player input
+    private InputState playerInput;
+
+    // Key bindings for action mapping
     private Map<String, Integer> keyBindings = new HashMap<>();
+
+    // Default constructor
+    public InputManager() {
+        this.inputDevices = new ArrayList<>();
+        this.playerInput = new InputState();
+    }
+
+    // Optional constructor matching UML
+    public InputManager(List<InputDevice> inputDevices) {
+        this.inputDevices = inputDevices != null ? inputDevices : new ArrayList<>();
+        this.playerInput = new InputState();
+    }
 
     // Registers input device
     public void registerDevice(InputDevice device) {
         if (device != null) inputDevices.add(device);
     }
 
-    // Polls all devices
+    // Polls all devices and processes input
     @Override
     public void update() {
         for (InputDevice d : inputDevices) {
             d.readInput();
         }
+        processInput();
     }
 
-    // Merges device input states
-    @Override
-    public InputState getInputState() {
+    // Merges device input states into playerInput
+    public void processInput() {
 
-        InputState merged = new InputState();
+        playerInput.reset();
 
         for (InputDevice d : inputDevices) {
             InputState s = d.getInputState();
-            merged.setMoveX(merged.getMoveX() + s.getMoveX());
-            merged.setMoveY(merged.getMoveY() + s.getMoveY());
-            merged.setJump(merged.isJump() || s.isJump());
+            playerInput.setMoveX(playerInput.getMoveX() + s.getMoveX());
+            playerInput.setMoveY(playerInput.getMoveY() + s.getMoveY());
+            playerInput.setJump(playerInput.isJump() || s.isJump());
         }
+    }
 
-        return merged;
+    // Returns merged player input
+    @Override
+    public InputState getInputState() {
+        return playerInput;
     }
 
     // Binds action to key
